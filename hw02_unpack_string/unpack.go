@@ -23,7 +23,7 @@ func Unpack(s string) (string, error) {
 func repeatRune(rune rune, repeatCount int) string {
 	output := ""
 	for i := 0; i < repeatCount; i++ {
-		output = output + string(rune)
+		output += string(rune)
 	}
 
 	return output
@@ -93,5 +93,4 @@ func processRunes(runes []rune) (string, error) {
 	newOutput, err := processRunes(runes[1:])
 
 	return output + newOutput, err
-
 }

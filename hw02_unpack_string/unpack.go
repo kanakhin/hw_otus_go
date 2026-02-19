@@ -61,12 +61,12 @@ func processRunes(runes []rune) (string, error) {
 			output, err := processRunes(runes[2:])
 
 			return string(runes[1]) + output, err
-		} else {
-			repeatCount, _ := strconv.Atoi(string(runes[2]))
-			newOutput, err := processRunes(runes[3:])
-
-			return repeatRune(runes[1], repeatCount) + newOutput, err
 		}
+
+		repeatCount, _ := strconv.Atoi(string(runes[2]))
+		newOutput, err := processRunes(runes[3:])
+
+		return repeatRune(runes[1], repeatCount) + newOutput, err
 	}
 
 	if unicode.IsDigit(runes[1]) {

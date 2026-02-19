@@ -20,10 +20,10 @@ func Unpack(s string) (string, error) {
 	return output, err
 }
 
-func repeatRune(rune rune, repeatCount int) string {
+func repeatRune(r rune, repeatCount int) string {
 	output := ""
 	for i := 0; i < repeatCount; i++ {
-		output += string(rune)
+		output += string(r)
 	}
 
 	return output
@@ -46,30 +46,30 @@ func processRunes(runes []rune) (string, error) {
 		return "", ErrInvalidString
 	}
 
-	if unicode.IsDigit(runes[1]) {
-		if string(runes[0]) == "\\" {
-			if !unicode.IsDigit(runes[1]) && string(runes[1]) != "\\" {
-				return "", ErrInvalidString
-			}
-
-			if len(runes) < 3 {
-				output, err := processRunes(runes[2:])
-
-				return string(runes[1]) + output, err
-			}
-
-			if !unicode.IsDigit(runes[2]) {
-				output, err := processRunes(runes[2:])
-
-				return string(runes[1]) + output, err
-			} else {
-				repeatCount, _ := strconv.Atoi(string(runes[2]))
-				newOutput, err := processRunes(runes[3:])
-
-				return repeatRune(runes[1], repeatCount) + newOutput, err
-			}
+	if unicode.IsDigit(runes[1]) && string(runes[0]) == "\\" {
+		if !unicode.IsDigit(runes[1]) && string(runes[1]) != "\\" {
+			return "", ErrInvalidString
 		}
 
+		if len(runes) < 3 {
+			output, err := processRunes(runes[2:])
+
+			return string(runes[1]) + output, err
+		}
+
+		if !unicode.IsDigit(runes[2]) {
+			output, err := processRunes(runes[2:])
+
+			return string(runes[1]) + output, err
+		} else {
+			repeatCount, _ := strconv.Atoi(string(runes[2]))
+			newOutput, err := processRunes(runes[3:])
+
+			return repeatRune(runes[1], repeatCount) + newOutput, err
+		}
+	}
+
+	if unicode.IsDigit(runes[1]) {
 		repeatCount, _ := strconv.Atoi(string(runes[1]))
 		newOutput, err := processRunes(runes[2:])
 

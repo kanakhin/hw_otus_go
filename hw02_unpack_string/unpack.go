@@ -12,7 +12,6 @@ func Unpack(s string) (string, error) {
 	runes := []rune(s)
 
 	output, err := processRunes(runes)
-
 	if err != nil {
 		return "", err
 	}

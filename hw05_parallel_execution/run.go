@@ -17,7 +17,7 @@ type Counter struct {
 
 // Run starts tasks in n goroutines and stops its work when receiving m errors from tasks.
 func Run(tasks []Task, n, m int) error {
-	taskSlice := tasks[:]
+	taskSlice := tasks
 	inProgressCount := Counter{}
 	errorCount := Counter{}
 	wg := &sync.WaitGroup{}
@@ -42,7 +42,6 @@ func Run(tasks []Task, n, m int) error {
 			}()
 
 			err := task()
-
 			if err != nil {
 				errorCount.Inc()
 			}

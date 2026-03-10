@@ -1,4 +1,4 @@
-module github.com/kanakhin/hw05_parallel_execution
+module github.com/kanakhin/hw_otus_go/hw05_parallel_execution
 
 go 1.23
 

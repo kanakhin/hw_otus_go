@@ -15,6 +15,7 @@ func runWithDoneCheck(in In, done In) Out {
 		closeAndClear := func() {
 			close(out)
 			for range in {
+				continue // drain in after cancellation
 			}
 		}
 

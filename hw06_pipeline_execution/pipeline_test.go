@@ -146,7 +146,7 @@ func TestPipelineNoStages(t *testing.T) {
 	in := make(Bi)
 	feedInts(in, []int{42})
 
-	var result []interface{}
+	result := make([]interface{}, 0, 1)
 	for v := range ExecutePipeline(in, nil) {
 		result = append(result, v)
 	}

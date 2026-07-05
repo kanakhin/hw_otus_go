@@ -145,6 +145,97 @@ func TestAllStageStop(t *testing.T) {
 		wg.Wait()
 
 		require.Len(t, result, 0)
-
 	})
+}
+
+func newStageGen(wg *sync.WaitGroup) func(func(interface{}) interface{}) Stage {
+	return func(f func(interface{}) interface{}) Stage {
+		return func(in In) Out {
+			out := make(Bi)
+			if wg != nil {
+				wg.Add(1)
+			}
+			go func() {
+				if wg != nil {
+					defer wg.Done()
+				}
+				defer close(out)
+				for v := range in {
+					time.Sleep(sleepPerStage)
+					out <- f(v)
+				}
+			}()
+			return out
+		}
+	}
+}
+
+func defaultStages(g func(func(interface{}) interface{}) Stage) []Stage {
+	return []Stage{
+		g(func(v interface{}) interface{} { return v }),
+		g(func(v interface{}) interface{} { return v.(int) * 2 }),
+		g(func(v interface{}) interface{} { return v.(int) + 100 }),
+		g(func(v interface{}) interface{} { return strconv.Itoa(v.(int)) }),
+	}
+}
+
+func collectStrings(out Out) []string {
+	result := make([]string, 0, 10)
+	for s := range out {
+		result = append(result, s.(string))
+	}
+	return result
+}
+
+func feedInts(in Bi, data []int) {
+	go func() {
+		for _, v := range data {
+			in <- v
+		}
+		close(in)
+	}()
+}
+
+func TestPipelineEmptyInput(t *testing.T) {
+	g := newStageGen(nil)
+	stages := defaultStages(g)
+
+	in := make(Bi)
+	close(in)
+
+	start := time.Now()
+	result := collectStrings(ExecutePipeline(in, nil, stages...))
+	elapsed := time.Since(start)
+
+	require.Empty(t, result)
+	require.Less(t, elapsed, sleepPerStage+fault)
+}
+
+func TestPipelineNoStages(t *testing.T) {
+	in := make(Bi)
+	feedInts(in, []int{42})
+
+	result := make([]interface{}, 0, 1)
+	for v := range ExecutePipeline(in, nil) {
+		result = append(result, v)
+	}
+
+	require.Equal(t, []interface{}{42}, result)
+}
+
+func TestPipelineSingleElement(t *testing.T) {
+	g := newStageGen(nil)
+	stages := defaultStages(g)
+
+	in := make(Bi)
+	feedInts(in, []int{1})
+
+	start := time.Now()
+	result := collectStrings(ExecutePipeline(in, nil, stages...))
+	elapsed := time.Since(start)
+
+	require.Equal(t, []string{"102"}, result)
+	require.Less(t,
+		int64(elapsed),
+		int64(sleepPerStage)*int64(len(stages))+int64(fault))
 }

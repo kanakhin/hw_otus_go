@@ -2,6 +2,8 @@ package main
 
 import (
 	"errors"
+	"io"
+	"os"
 )
 
 var (
@@ -10,6 +12,47 @@ var (
 )
 
 func Copy(fromPath, toPath string, offset, limit int64) error {
-	// Place your code here.
+	srcInfo, err := os.Stat(fromPath)
+	if err != nil {
+		return err
+	}
+
+	if !srcInfo.Mode().IsRegular() {
+		return ErrUnsupportedFile
+	}
+
+	fileSize := srcInfo.Size()
+	if offset > fileSize {
+		return ErrOffsetExceedsFileSize
+	}
+
+	bytesToCopy := fileSize - offset
+	if limit > 0 && limit < bytesToCopy {
+		bytesToCopy = limit
+	}
+
+	src, err := os.Open(fromPath)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	if _, err := src.Seek(offset, io.SeekStart); err != nil {
+		return err
+	}
+
+	dst, err := os.Create(toPath)
+	if err != nil {
+		return err
+	}
+
+	if _, err := io.CopyN(dst, src, bytesToCopy); err != nil {
+		return err
+	}
+
+	if err := dst.Close(); err != nil {
+		return err
+	}
+
 	return nil
 }

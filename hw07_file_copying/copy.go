@@ -45,9 +45,12 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	if err != nil {
 		return err
 	}
-	defer dst.Close()
 
 	if _, err := io.CopyN(dst, src, bytesToCopy); err != nil {
+		return err
+	}
+
+	if err := dst.Close(); err != nil {
 		return err
 	}
 
